@@ -20,7 +20,7 @@ from heat.common.i18n import _
 from heat.engine import properties
 from heat.engine import resource
 
-from common.mixins import f5_common_resources
+from common.mixins import f5_bigip
 from common.mixins import F5BigIPMixin
 
 
@@ -122,7 +122,7 @@ class F5SysiAppCompositeTemplate(F5BigIPMixin, resource.Resource):
 
         return self._add_optional_attr(template)
 
-    @f5_common_resources
+    @f5_bigip
     def handle_create(self):
         '''Create the template on the BIG-IP®.
 
@@ -130,7 +130,7 @@ class F5SysiAppCompositeTemplate(F5BigIPMixin, resource.Resource):
         '''
 
         template_dict = self._build_iapp_dict()
-        template_dict['partition'] = self.partition_name
+        template_dict['partition'] = self.properties[self.PARTITION]
 
         try:
             template = self.bigip.tm.sys.application.templates.template
@@ -138,7 +138,7 @@ class F5SysiAppCompositeTemplate(F5BigIPMixin, resource.Resource):
         except Exception as ex:
             raise exception.ResourceFailure(ex, None, action='CREATE')
 
-    @f5_common_resources
+    @f5_bigip
     def handle_delete(self):
         '''Delete the iApp® Template on the BIG-IP®.
 
@@ -147,13 +147,13 @@ class F5SysiAppCompositeTemplate(F5BigIPMixin, resource.Resource):
 
         if self.bigip.tm.sys.application.templates.template.exists(
                 name=self.properties[self.NAME],
-                partition=self.partition_name
+                partition=self.properties[self.PARTITION]
         ):
             try:
                 loaded_template = self.bigip.tm.sys.application.templates.template.\
                     load(
                         name=self.properties[self.NAME],
-                        partition=self.partition_name
+                        partition=self.properties[self.PARTITION]
                     )
                 loaded_template.delete()
             except Exception as ex:

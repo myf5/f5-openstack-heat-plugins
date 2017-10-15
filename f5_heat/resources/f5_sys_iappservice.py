@@ -22,7 +22,7 @@ from heat.common.i18n import _LE
 from heat.engine import properties
 from heat.engine import resource
 
-from common.mixins import f5_common_resources
+from common.mixins import f5_bigip
 from common.mixins import F5BigIPMixin
 from oslo_log import log as logging
 
@@ -132,7 +132,7 @@ class F5SysiAppService(resource.Resource, F5BigIPMixin):
         service_dict.update(self.iapp_answers_from_hot)
         return service_dict
 
-    @f5_common_resources
+    @f5_bigip
     def handle_create(self):
         '''Creates the iApp® Service from an iApp® template.
 
@@ -140,7 +140,7 @@ class F5SysiAppService(resource.Resource, F5BigIPMixin):
         '''
 
         service_dict = self._build_service_dict()
-        service_dict['partition'] = self.partition_name
+        service_dict['partition'] = self.properties[self.PARTITION]
 
         try:
             service = self.bigip.tm.sys.application.services.service
@@ -148,7 +148,7 @@ class F5SysiAppService(resource.Resource, F5BigIPMixin):
         except Exception as ex:
             raise exception.ResourceFailure(ex, None, action='CREATE')
 
-    @f5_common_resources
+    @f5_bigip
     def handle_delete(self):
         '''Deletes the iApp® Service
 
@@ -157,13 +157,13 @@ class F5SysiAppService(resource.Resource, F5BigIPMixin):
 
         if self.bigip.tm.sys.application.services.service.exists(
                 name=self.properties[self.NAME],
-                partition=self.partition_name
+                partition=self.properties[self.PARTITION]
         ):
             try:
                 loaded_service = \
                     self.bigip.tm.sys.application.services.service.load(
                         name=self.properties[self.NAME],
-                        partition=self.partition_name
+                        partition=self.properties[self.PARTITION]
                     )
                 loaded_service.delete()
             except Exception as ex:
