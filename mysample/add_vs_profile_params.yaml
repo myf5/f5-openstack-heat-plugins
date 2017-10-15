@@ -1,0 +1,7 @@
+parameters:
+  bigip_un: admin
+  bigip_pw: admin
+  vs_name: Project_e7f62a31-5017-4263-aa01-5bc10f16f741
+  bigip_mgmtip: 192.168.214.253
+  vs_partition: Project_dade79d402af436aafd0e331a6d2e140
+  profile_name: oneconnect

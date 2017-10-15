@@ -1,0 +1,76 @@
+description: >
+  This heat template demonstrates adding profile to F5 Device.
+
+heat_template_version: 2015-04-30
+
+parameters:
+  bigip_un:
+    description: BigIP Username
+    label: BigIP Login Username
+    type: string
+    default: admin
+  bigip_pw:
+    description: BigIP Password
+    label: BigIP Login Password
+    type: string
+    hidden: True
+  bigip_mgmtip:
+    description: BigIP Rest interface IP
+    label: BigIP mgmtip
+    type: string
+  vs_name:
+    description: Virtual Server Name
+    label: Virtual Server Name
+    type: string
+    default: vs_test
+  vs_partition:
+    description: The partition of the vs
+    label: VS partition
+    type: string
+    default: Common
+  profile_name:
+    description: The profile that to be added
+    label: VS Profile Name
+    type: string
+    default: oneconnect
+
+resources:
+  bigip:
+    type: F5::BigIP::Device
+    properties:
+      ip: { get_param: bigip_mgmtip }
+      username: { get_param: bigip_un }
+      password: { get_param: bigip_pw }
+  iapp_service:
+    type: F5::Sys::iAppService
+    depends_on: iapp_template
+    properties:
+      name: add_profile
+      bigip_server: { get_resource: bigip }
+      partition: { get_param: vs_partition }
+      template_name: add_profile_templ
+  iapp_template:
+    type: F5::Sys::iAppCompositeTemplate
+    properties:
+      name: add_profile_templ  
+      bigip_server: { get_resource: bigip }
+      partition: Project_dade79d402af436aafd0e331a6d2e140
+      requires_modules: [ ltm ]
+      implementation:
+        str_replace:
+          params:
+            __partition__: { get_param: vs_partition }
+            __vs_name__: { get_param: vs_name }
+            __profilename__: { get_param: profile_name }
+          template: |
+            tmsh::modify /ltm virtual /__partition__/__vs_name__ profiles add "{ /Common/__profilename__ }"
+
+      presentation: |
+        section say_hello {
+            message intro "This template is for adding profile to vs."
+        }
+
+outputs:
+  iapp_tmpl_name:
+    description: iApp template created.
+    value: test
