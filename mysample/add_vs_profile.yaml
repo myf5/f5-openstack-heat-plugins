@@ -54,7 +54,7 @@ resources:
     properties:
       name: add_profile_templ  
       bigip_server: { get_resource: bigip }
-      partition: Project_dade79d402af436aafd0e331a6d2e140
+      partition: { get_param: vs_partition }
       requires_modules: [ ltm ]
       implementation:
         str_replace:
